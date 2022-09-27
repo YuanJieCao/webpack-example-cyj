@@ -7,7 +7,7 @@ const {CleanWebpackPlugin} = require("clean-webpack-plugin")
 //打包展示为方便交互的直观树状图
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 const FriendlyErrorsWebpackPlugin = require("friendly-errors-webpack-plugin");
-
+console.log(path.join(__dirname, '../public'))
 //判断生产还是开发环境 true 就是开发环境，false是生产环境
 const devMode = process.argv.indexOf('--mode=production') === -1;
 const config = {
@@ -15,10 +15,26 @@ const config = {
     stats: 'errors-only',
     devtool: "eval-cheap-source-map",
     devServer: {
+        proxy: {
+            "/api": {
+                target: 'http://localhost:3000',
+                pathRewrite: {'^/api': ''},
+                secure: false,
+
+            }
+        },
+        host: '127.0.0.1',
         port: 3000,
+        //添加响应头
+        // headers: {
+        //     'X-Custom-Foo': 'bar',
+        // },
         hot: true,
+        // static: {
+        //     directory: path.join(__dirname, 'dist'),
+        // },
         static: {
-            directory: path.join(__dirname, 'dist'),
+            directory: path.join(__dirname, '../public')
         },
         //当出现问题全屏显示
         client: {
@@ -173,14 +189,14 @@ const config = {
         // new CleanWebpackPlugin(),
         new webpack.HotModuleReplacementPlugin(),
         //    在这里添加一个连接到打包完的vendor中
-        // new webpack.DllReferencePlugin({
-        //     context: __dirname,
-        //     manifest: require("../dist/public/js/vendor-manifest.json")
-        // }),
-        new BundleAnalyzerPlugin({
-            analyzerHost: "127.0.0.1",
-            analyzerPort: 8889
+        new webpack.DllReferencePlugin({
+            context: __dirname,
+            manifest: require("../vendor-manifest.json")
         }),
+        // new BundleAnalyzerPlugin({
+        //     analyzerHost: "127.0.0.1",
+        //     analyzerPort: 8889
+        // }),
         new FriendlyErrorsWebpackPlugin()
     ],
     mode: "development",
